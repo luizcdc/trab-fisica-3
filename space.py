@@ -16,7 +16,7 @@ class Space2D:
     def relativeIndex(self, base: int, offset: int):
         return (base+offset) % self.size
 
-    def retornaObjeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
+    def retorna_objeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
         # retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial
         # ex: a partir de qualquer ponto de um circulo, retorna todos os pontos do circulo
         x, y = coord_inicial
@@ -30,13 +30,13 @@ class Space2D:
                 vizinho = self.points[xv][yv]
                 if (xv, yv) not in pontos_integrantes and pontoInicial.mesmoMaterial(vizinho):
                     pontos_integrantes.add((xv, yv))
-                    pontos_integrantes = pontos_integrantes.union(self.retornaObjeto(
+                    pontos_integrantes = pontos_integrantes.union(self.retorna_objeto(
                         (xv, yv), pontos_integrantes))
         return pontos_integrantes
 
-    def retornaPontosSuperficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
+    def retorna_pontos_superficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
         # retorna todos os pontos superficiais de um objeto partindo de qualquer ponto do objeto
-        pontos_integrantes = self.retornaObjeto(coord_inicial)
+        pontos_integrantes = self.retorna_objeto(coord_inicial)
         pontos_de_superficie = set()
         if len(pontos_integrantes) == 0:
             # caso o ponto inicial seja vácuo
@@ -58,10 +58,9 @@ class Space2D:
                         break
         return pontos_de_superficie
 
-    def distanciaEntrePontos(self, coord_1, coord_2):
+    def distancia_simples(self, coord_1, coord_2):
         x1, y1 = coord_1
         x2, y2 = coord_2
-
         return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
     def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
@@ -70,7 +69,7 @@ class Space2D:
             for j in range(-raio-1, raio+2):
                 px, py = x+i, y+j
                 if px >= 0 and px < self.size and py >= 0 and py < self.size:
-                    if self.distanciaEntrePontos(coord_centro, (px, py)) < raio:
+                    if self.distancia_simples(coord_centro, (px, py)) < raio:
                         self.points[x][y] = Ponto(
                             epsilon=material.epsilon, cond=material.cond, carga=material.carga)
 
