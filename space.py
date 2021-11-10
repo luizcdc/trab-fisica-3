@@ -16,6 +16,9 @@ class Space2D:
     def relativeIndex(self, base: int, offset: int):
         return (base+offset) % self.size
 
+    def validIndex(self, coord: tuple):
+        return coord[0] >= 0 and coord[0] < self.size and coord[1] >= 0 and coord[1] < self.size
+
     def retorna_objeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
         # retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial
         # ex: a partir de qualquer ponto de um circulo, retorna todos os pontos do circulo
@@ -25,13 +28,14 @@ class Space2D:
             pontos_integrantes.add((coord_inicial))
         for i in range(-1, 2):
             for j in range(-1, 2):
-                xv = self.relativeIndex(x, i)
-                yv = self.relativeIndex(y, j)
-                vizinho = self.points[xv][yv]
-                if (xv, yv) not in pontos_integrantes and pontoInicial.mesmoMaterial(vizinho):
-                    pontos_integrantes.add((xv, yv))
-                    pontos_integrantes = pontos_integrantes.union(self.retorna_objeto(
-                        (xv, yv), pontos_integrantes))
+                xv = x+i
+                yv = x+j
+                if self.validIndex((xv, yv)):
+                    vizinho = self.points[xv][yv]
+                    if (xv, yv) not in pontos_integrantes and pontoInicial.mesmoMaterial(vizinho):
+                        pontos_integrantes.add((xv, yv))
+                        pontos_integrantes = pontos_integrantes.union(self.retorna_objeto(
+                            (xv, yv), pontos_integrantes))
         return pontos_integrantes
 
     def retorna_pontos_superficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
@@ -50,13 +54,14 @@ class Space2D:
                 if (ehSuperficie):
                     break
                 for j in range(-1, 2):
-                    xv = self.relativeIndex(x, i)
-                    yv = self.relativeIndex(y, j)
-                    vizinho = self.points[xv][yv]
-                    if not ponto.mesmoMaterial(vizinho):
-                        pontos_de_superficie.add((xv, yv))
-                        ehSuperficie = True
-                        break
+                    xv = x+i
+                    yv = x+j
+                    if self.validIndex((xv, yv)):
+                        vizinho = self.points[xv][yv]
+                        if not ponto.mesmoMaterial(vizinho):
+                            pontos_de_superficie.add((xv, yv))
+                            ehSuperficie = True
+                            break
         return pontos_de_superficie
 
     def distancia_simples(self, coord_1, coord_2):
@@ -103,5 +108,3 @@ class Space2D:
             carga_parcial = carga / len(pontos_integrantes)
             for p in pontos_integrantes:
                 self.inserir_carga_pontual(coord=p, carga=carga_parcial)
-        # isolante é uniforme
-        # metal é na superfície/borda
