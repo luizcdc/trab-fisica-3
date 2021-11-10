@@ -36,7 +36,8 @@ class Space2D:
 
     def retorna_pontos_superficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
         # retorna todos os pontos superficiais de um objeto partindo de qualquer ponto do objeto
-        pontos_integrantes = self.retorna_objeto(coord_inicial)
+        if pontos_integrantes == None:
+            pontos_integrantes = self.retorna_objeto(coord_inicial)
         pontos_de_superficie = set()
         if len(pontos_integrantes) == 0:
             # caso o ponto inicial seja vácuo
@@ -76,10 +77,31 @@ class Space2D:
                     # para cada ponto, verificar se está dentro do círculo
                     # só usar posições absolutas e não "dar a volta" no espaço
 
-    def inserir_carga_pontual(self, coord: Tuple, carga: int = 1):
+    def inserir_carga_pontual(self, coord: Tuple, carga: float):
         ponto_antigo = self.points[coord[0]][coord[1]]
         self.points[coord[0]][coord[1]] = Ponto(epsilon=ponto_antigo.epsilon,
                                                 cond=ponto_antigo.cond,
                                                 carga=carga)
 
-#
+    def inserir_carga_em_objeto(self, ponto_inicial: Tuple, carga: float):
+        x, y = ponto_inicial
+        if self.points[x][y].epsilon == float("inf"):
+            # é metal
+            borda = self.retorna_pontos_superficiais(
+                coord_inicial=ponto_inicial)
+            carga_parcial = carga / len(borda)
+            for p in borda:
+                x, y = p
+                self.inserir_carga_pontual(coord=p, carga=carga_parcial)
+        elif self.points[x][y].epsilon == Ponto.EPSILON_0:
+            # é o vácuo
+            self.inserir_carga_pontual(coord=ponto_inicial, carga=carga)
+        else:
+            # é isolante
+            pontos_integrantes = self.retorna_objeto(
+                coord_inicial=ponto_inicial)
+            carga_parcial = carga / len(pontos_integrantes)
+            for p in pontos_integrantes:
+                self.inserir_carga_pontual(coord=p, carga=carga_parcial)
+        # isolante é uniforme
+        # metal é na superfície/borda
