@@ -47,7 +47,7 @@ class Ponto:
         pass
 
     def isVacuo(self):
-        return self.epsilon == Point.EPSILON_0 and self.cond == Point.COND_VACUO
+        return self.epsilon == Ponto.EPSILON_0 and self.cond == Ponto.COND_VACUO
 
     def mesmoMaterial(self, outro):
-        return isinstance(outro, Point) and self.cond == outro.cond and self.epsilon == outro.epsilon
+        return isinstance(outro, Ponto) and self.cond == outro.cond and self.epsilon == outro.epsilon
