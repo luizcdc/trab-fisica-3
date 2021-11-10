@@ -75,3 +75,11 @@ class Space2D:
 
                     # para cada ponto, verificar se está dentro do círculo
                     # só usar posições absolutas e não "dar a volta" no espaço
+
+    def inserir_carga_pontual(self, coord: Tuple, carga: int = 1):
+        ponto_antigo = self.points[coord[0]][coord[1]]
+        self.points[coord[0]][coord[1]] = Ponto(epsilon=ponto_antigo.epsilon,
+                                                cond=ponto_antigo.cond,
+                                                carga=carga)
+
+#
