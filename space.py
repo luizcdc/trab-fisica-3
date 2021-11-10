@@ -22,10 +22,7 @@ class Space2D:
         x, y = coord_inicial
         pontoInicial = self.points[x][y]
         if len(pontos_integrantes) == 0:
-            if pontoInicial.isVacuo():
-                return pontos_integrantes
-            else:
-                pontos_integrantes.add((coord_inicial))
+            pontos_integrantes.add((coord_inicial))
         for i in range(-1, 2):
             for j in range(-1, 2):
                 xv = self.relativeIndex(x, i)
@@ -60,3 +57,22 @@ class Space2D:
                         ehSuperficie = True
                         break
         return pontos_de_superficie
+
+    def distanciaEntrePontos(self, coord_1, coord_2):
+        x1, y1 = coord_1
+        x2, y2 = coord_2
+
+        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+    def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
+        x, y = coord_centro
+        for i in range(-raio-1, raio+2):
+            for j in range(-raio-1, raio+2):
+                px, py = x+i, y+j
+                if px >= 0 and px < self.size and py >= 0 and py < self.size:
+                    if self.distanciaEntrePontos(coord_centro, (px, py)) < raio:
+                        self.points[x][y] = Ponto(
+                            epsilon=material.epsilon, cond=material.cond, carga=material.carga)
+
+                    # para cada ponto, verificar se está dentro do círculo
+                    # só usar posições absolutas e não "dar a volta" no espaço

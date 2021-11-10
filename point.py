@@ -1,5 +1,3 @@
-
-
 class Ponto:
     # constantes estáticas de classe
     EPSILON_0 = 8.85 * (10 ** -12)
