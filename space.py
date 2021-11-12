@@ -97,6 +97,23 @@ class Space2D:
                     cargas.add((i, j))
         return cargas
 
+    def forca_eletrica_entre(self, coord_a, coord_b):
+        ax, ay = coord_a
+        bx, by = coord_b
+        carga_a = self.points[ax][ay]
+        carga_b = self.points[bx][by]
+        v = (ax - bx, ay - by)
+
+        dist = Space2D.tamanho_vetor(v)
+        v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
+
+        forca = (1/(4*PI*Ponto.EPSILON_0) *
+                 ((carga_a.carga*carga_b.carga)/(dist**2)))  # lei de Coulomb
+
+        # vetor da força elétrica referente a carga_a
+        v = (v[0]*forca, v[1]*forca)
+        return v
+
     def calcula_forca_eletrica_pontual(self, coord_ponto: Tuple, cargas: set = None):
         """Retorna um vetor que representa a força elétrica resultante 
         de todo o espaço naquele ponto.
@@ -113,24 +130,13 @@ class Space2D:
             # cargas pode ser passado opcionalmente para evitar recalcular
             cargas = self.get_todas_as_cargas()
 
-        forcas_cada_carga = []
-        for cx, cy in cargas:
-            carga_atual = self.points[cx][cy]
-            v = (x - cx, y - cy)
-
-            dist = Space2D.tamanho_vetor(v)
-            v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
-
-            forca = (1/(4*PI*Ponto.EPSILON_0) *
-                     ((carga_atual.carga*carga_local.carga)/(dist**2)))  # lei de Coulomb
-
-            # vetor da força elétrica referente a carga_atual
-            v = (v[0]*forca, v[1]*forca)
-            forcas_cada_carga.append(v)
-
-        forca_resultante = reduce(lambda x, y:  (
-            x[0]+y[0], x[1] + y[1]), forcas_cada_carga)
-        # somatório de todos os vetores de força elétrica
+        # a list comprehension gera o conjunto das forças elétricas independentes
+        # atuando sobre a carga, enquanto que reduce faz o somatório dos vetores
+        # ao fim retornando o vetor da força resultante
+        forca_resultante = reduce(lambda x, y:  (x[0]+y[0], x[1] + y[1]),
+                                  [self.forca_eletrica_entre(coord_ponto,
+                                                             coord_atual)
+                                   for coord_atual in cargas])
 
         return forca_resultante
 
