@@ -1,17 +1,18 @@
 from _typeshed import ReadableBuffer
 from typing import Tuple
 from point import Ponto
+from sys import argv
 
 
 class Space2D:
     def __init__(self, size: int = 1001):
         self.size = size
-        self.points = []
+        self.points: list = []
         for i in range(size):
             self.points.append([])
             for j in range(size):
                 # inicializa tudo como se fosse vacuo
-                self.points.append(Ponto())
+                self.points[i].append(Ponto())
 
     def relativeIndex(self, base: int, offset: int):
         return (base+offset) % self.size
@@ -108,3 +109,20 @@ class Space2D:
             carga_parcial = carga / len(pontos_integrantes)
             for p in pontos_integrantes:
                 self.inserir_carga_pontual(coord=p, carga=carga_parcial)
+
+    def get_todas_as_cargas(self):
+        """Retorna as coordenadas de todos os pontos do espaço que têm carga"""
+        cargas = set()
+        for i, row in enumerate(self.points):
+            for j, point in enumerate(row):
+                if point.carga != 0:
+                    cargas.add((i, j))
+        return cargas
+
+
+def main(argv):
+    pass
+
+
+if __name__ == "__main__":
+    main(argv)
