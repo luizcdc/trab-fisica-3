@@ -1,6 +1,6 @@
 from _typeshed import ReadableBuffer
 from typing import Tuple
-from point import Ponto
+from Ponto import Ponto
 from sys import argv
 from functools import reduce
 from math import pi as PI
