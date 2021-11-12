@@ -8,7 +8,7 @@ class Ponto:
     EPSILON_PRATA = float("inf")
     # fim das constantes estáticas de classe
 
-    def __init__(self, tipo="V", epsilon=EPSILON_0, cond=COND_VACUO, carga=0):
+    def __init__(self, tipo="V", epsilon=EPSILON_0, cond=COND_VACUO, carga=0.0):
         """Tipo pode ser apenas "V" (vácuo), "C" (condutor) ou "I" (isolante)"""
         if tipo not in ("V", "C", "I"):
             raise ValueError(

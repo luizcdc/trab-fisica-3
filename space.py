@@ -2,17 +2,14 @@ from _typeshed import ReadableBuffer
 from typing import Tuple
 from point import Ponto
 from sys import argv
+from functools import reduce
+from math import pi as PI
 
 
 class Space2D:
     def __init__(self, size: int = 1001):
         self.size = size
-        self.points: list = []
-        for i in range(size):
-            self.points.append([])
-            for j in range(size):
-                # inicializa tudo como se fosse vacuo
-                self.points[i].append(Ponto())
+        self.points = [[Ponto() for _ in range(size)] for _ in range(size)]
 
     def relativeIndex(self, base: int, offset: int):
         return (base+offset) % self.size
@@ -65,10 +62,15 @@ class Space2D:
                             break
         return pontos_de_superficie
 
-    def distancia_simples(self, coord_1, coord_2):
+    @staticmethod
+    def distancia_simples(coord_1, coord_2):
         x1, y1 = coord_1
         x2, y2 = coord_2
-        return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        return Space2D.tamanho_vetor((x2-x1, y2-y1))
+
+    @staticmethod
+    def tamanho_vetor(x):
+        return (x[0]**2 + x[1] ** 2) ** 0.5
 
     def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
         x, y = coord_centro
@@ -76,7 +78,7 @@ class Space2D:
             for j in range(-raio-1, raio+2):
                 px, py = x+i, y+j
                 if px >= 0 and px < self.size and py >= 0 and py < self.size:
-                    if self.distancia_simples(coord_centro, (px, py)) < raio:
+                    if Space2D.distancia_simples(coord_centro, (px, py)) < raio:
                         self.points[x][y] = Ponto(
                             epsilon=material.epsilon, cond=material.cond, carga=material.carga)
 
@@ -84,10 +86,53 @@ class Space2D:
                     # só usar posições absolutas e não "dar a volta" no espaço
 
     def inserir_carga_pontual(self, coord: Tuple, carga: float):
-        ponto_antigo = self.points[coord[0]][coord[1]]
-        self.points[coord[0]][coord[1]] = Ponto(epsilon=ponto_antigo.epsilon,
-                                                cond=ponto_antigo.cond,
-                                                carga=carga)
+        self.points[coord[0]][coord[1]].carga = carga
+
+    def get_todas_as_cargas(self):
+        """Retorna as coordenadas de todos os pontos do espaço que têm carga"""
+        cargas = set()
+        for i, row in enumerate(self.points):
+            for j, point in enumerate(row):
+                if point.carga != 0:
+                    cargas.add((i, j))
+        return cargas
+
+    def calcula_forca_eletrica_pontual(self, coord_ponto: Tuple, cargas: set = None):
+        """Retorna um vetor que representa a força elétrica resultante 
+        de todo o espaço naquele ponto.
+
+        O parâmetro 'cargas' pode ser passado opcionalmente para evitar recalcular.
+        """
+        x, y = coord_ponto
+        carga_local = self.points[x][y]
+        if carga_local.carga == 0:
+            # se aqui não tem carga, nem precisa calcular
+            return 0
+
+        if cargas == None:
+            # cargas pode ser passado opcionalmente para evitar recalcular
+            cargas = self.get_todas_as_cargas()
+
+        forcas_cada_carga = []
+        for cx, cy in cargas:
+            carga_atual = self.points[cx][cy]
+            v = (x - cx, y - cy)
+
+            dist = Space2D.tamanho_vetor(v)
+            v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
+
+            forca = (1/(4*PI*Ponto.EPSILON_0) *
+                     ((carga_atual.carga*carga_local.carga)/(dist**2)))  # lei de Coulomb
+
+            # vetor da força elétrica referente a carga_atual
+            v = (v[0]*forca, v[1]*forca)
+            forcas_cada_carga.append(v)
+
+        forca_resultante = reduce(lambda x, y:  (
+            x[0]+y[0], x[1] + y[1]), forcas_cada_carga)
+        # somatório de todos os vetores de força elétrica
+
+        return forca_resultante
 
     def inserir_carga_em_objeto(self, ponto_inicial: Tuple, carga: float):
         x, y = ponto_inicial
@@ -109,15 +154,6 @@ class Space2D:
             carga_parcial = carga / len(pontos_integrantes)
             for p in pontos_integrantes:
                 self.inserir_carga_pontual(coord=p, carga=carga_parcial)
-
-    def get_todas_as_cargas(self):
-        """Retorna as coordenadas de todos os pontos do espaço que têm carga"""
-        cargas = set()
-        for i, row in enumerate(self.points):
-            for j, point in enumerate(row):
-                if point.carga != 0:
-                    cargas.add((i, j))
-        return cargas
 
 
 def main(argv):
