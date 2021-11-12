@@ -8,22 +8,50 @@ from math import pi as PI
 
 class Space2D:
     def __init__(self, size: int = 1001):
+        """Construtor da classe Space2D.
+
+        `size` é o tamanho do grid (diâmetro). Por padrão é 1001x1001 pontos.
+        """
         self.size = size
+
+        # essa list comprehension aninhada cria uma lista que contém `size` listas
+        # com `size` pontos de vácuo cada uma
         self.points = [[Ponto() for _ in range(size)] for _ in range(size)]
 
     def relativeIndex(self, base: int, offset: int):
+        """Calcula o índice relativo caso o offset ultrapasse as extremidades do espaço.
+
+        Ex: para um grid de 1001, um índice base igual a 50 e offset de -200, 
+        retornaria -150 % 1001 = 851, isto é, 200 posições antes da posição 50 
+        teríamos a posição 851 (pois o espaço é conectado em suas extremidades).
+
+        Necessário para a simulação do espaço infinito.
+        """
         return (base+offset) % self.size
 
     def validIndex(self, coord: tuple):
+        """Verifica se as coordenadas especificadas são válidas, isto é, não ul-
+        trapassam as dimensões do grid."""
         return coord[0] >= 0 and coord[0] < self.size and coord[1] >= 0 and coord[1] < self.size
 
     def retorna_objeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
-        # retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial
-        # ex: a partir de qualquer ponto de um circulo, retorna todos os pontos do circulo
+        """Retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial.
+
+        Um "objeto" nesse caso é uma região contínua do espaço composta por 
+        pontos do mesmo material. 
+
+        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna 
+        todos os pontos do circulo.
+        """
+
         x, y = coord_inicial
         pontoInicial = self.points[x][y]
+
+        # A função é recursiva. Esse if só é executado na chamada inicial.
         if len(pontos_integrantes) == 0:
             pontos_integrantes.add((coord_inicial))
+
+        # para cada um dos vizinhos
         for i in range(-1, 2):
             for j in range(-1, 2):
                 xv = x+i
@@ -31,65 +59,88 @@ class Space2D:
                 if self.validIndex((xv, yv)):
                     vizinho = self.points[xv][yv]
                     if (xv, yv) not in pontos_integrantes and pontoInicial.mesmoMaterial(vizinho):
+                        # se chegou até aqui, o vizinho é do mesmo material e ainda não foi processado
+                        # adicionamos ele ao conjunto de pontos integrantes e verificamos os vizinhos dele
                         pontos_integrantes.add((xv, yv))
                         pontos_integrantes = pontos_integrantes.union(self.retorna_objeto(
                             (xv, yv), pontos_integrantes))
         return pontos_integrantes
 
     def retorna_pontos_superficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
-        # retorna todos os pontos superficiais de um objeto partindo de qualquer ponto do objeto
+        """Retorna todos os pontos que estão na borda de um objeto a partir de um
+        ponto qualquer do objeto.
+
+        Um "objeto" nesse caso é uma região contínua do espaço composta por 
+        pontos do mesmo material. Um ponto na borda de um objeto é um ponto que
+        tem ao menos um vizinho que não é do mesmo material. 
+
+        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna 
+        apenas os pontos da circunferência do circulo.
+        """
+
+        # pontos integrantes pode ser passado pronto para evitar recalcular
         if pontos_integrantes == None:
             pontos_integrantes = self.retorna_objeto(coord_inicial)
+
         pontos_de_superficie = set()
-        if len(pontos_integrantes) == 0:
-            # caso o ponto inicial seja vácuo
-            return pontos_integrantes
+
         for coord_ponto in pontos_integrantes:
-            ehSuperficie = False
+            ehSuperficie = False  # flag para ir para o próximo ponto
             x, y = coord_ponto
             ponto = self.points[x][y]
+
+            # para cada vizinho
             for i in range(-1, 2):
-                if (ehSuperficie):
-                    break
                 for j in range(-1, 2):
                     xv = x+i
                     yv = x+j
                     if self.validIndex((xv, yv)):
                         vizinho = self.points[xv][yv]
                         if not ponto.mesmoMaterial(vizinho):
+                            # se esse ponto tem um vizinho de material diferente,
+                            # é um ponto da borda do objeto.
                             pontos_de_superficie.add((xv, yv))
                             ehSuperficie = True
                             break
+                if (ehSuperficie):
+                    # encerra o for do i, isto é, não precisa verificar nenhum
+                    # outro vizinho, e vai processar o próximo ponto do objeto
+                    break
         return pontos_de_superficie
 
     @staticmethod
-    def distancia_simples(coord_1, coord_2):
+    def distancia_simples(coord_1: Tuple, coord_2: Tuple):
+        """Distância entre dois pontos (passados por coordenada)"""
         x1, y1 = coord_1
         x2, y2 = coord_2
         return Space2D.tamanho_vetor((x2-x1, y2-y1))
 
     @staticmethod
-    def tamanho_vetor(x):
+    def tamanho_vetor(x: Tuple):
+        """Tamanho de um vetor"""
         return (x[0]**2 + x[1] ** 2) ** 0.5
 
     def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
+        """Insere no espaço um círculo de um determinado material com um 
+        determinado raio, com seu centro em coord_centro."""
         x, y = coord_centro
         for i in range(-raio-1, raio+2):
             for j in range(-raio-1, raio+2):
+                # varredura de um quadrado de tamanho raio+1 * 2
                 px, py = x+i, y+j
-                if px >= 0 and px < self.size and py >= 0 and py < self.size:
+                if self.validIndex((px, py)):
                     if Space2D.distancia_simples(coord_centro, (px, py)) < raio:
+                        # se o ponto está dentro do círculo (distância menor que o raio)
+                        # substitui ele por um ponto do mesmo material do círculo
                         self.points[x][y] = Ponto(
                             epsilon=material.epsilon, cond=material.cond, carga=material.carga)
 
-                    # para cada ponto, verificar se está dentro do círculo
-                    # só usar posições absolutas e não "dar a volta" no espaço
-
     def inserir_carga_pontual(self, coord: Tuple, carga: float):
+        """Sem mudar o material de um ponto no espaço, insere uma carga ali."""
         self.points[coord[0]][coord[1]].carga = carga
 
     def get_todas_as_cargas(self):
-        """Retorna as coordenadas de todos os pontos do espaço que têm carga"""
+        """Retorna as coordenadas de todos os pontos do espaço que têm qualquer carga."""
         cargas = set()
         for i, row in enumerate(self.points):
             for j, point in enumerate(row):
@@ -97,18 +148,28 @@ class Space2D:
                     cargas.add((i, j))
         return cargas
 
-    def forca_eletrica_entre(self, coord_a, coord_b):
+    def forca_eletrica_entre(self, coord_a: Tuple, coord_b: Tuple):
+        """Retorna o vetor da força elétrica que o ponto coord_b exerce no
+        ponto coord_a.
+        """
+
+        if not self.validIndex(coord_a) or not self.validIndex(coord_b):
+            raise ValueError("Coordenadas passadas para "
+                             "forca_eletrica_entre(coord_a, coord_b) "
+                             "inválidas.")
+
         ax, ay = coord_a
         bx, by = coord_b
         carga_a = self.points[ax][ay]
         carga_b = self.points[bx][by]
-        v = (ax - bx, ay - by)
+        v = (ax - bx, ay - by)  # vetor entre as cargas
 
         dist = Space2D.tamanho_vetor(v)
         v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
 
+        # lei de Coulomb
         forca = (1/(4*PI*Ponto.EPSILON_0) *
-                 ((carga_a.carga*carga_b.carga)/(dist**2)))  # lei de Coulomb
+                 ((carga_a.carga*carga_b.carga)/(dist**2)))
 
         # vetor da força elétrica referente a carga_a
         v = (v[0]*forca, v[1]*forca)
@@ -141,6 +202,9 @@ class Space2D:
         return forca_resultante
 
     def inserir_carga_em_objeto(self, ponto_inicial: Tuple, carga: float):
+        """Insere uma carga num objeto. Se for condutor, distribui igualmente
+        por pelos pontos da borda do objeto, se for isolante, distribui igualmente
+        por todos os pontos do objeto. Se for vácuo, insere apenas no ponto inicial."""
         x, y = ponto_inicial
         if self.points[x][y].epsilon == float("inf"):
             # é metal
