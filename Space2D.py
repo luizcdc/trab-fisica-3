@@ -152,6 +152,8 @@ class Space2D:
         """Retorna o vetor da força elétrica que o ponto coord_b exerce no
         ponto coord_a.
         """
+        if coord_a == coord_b:
+            return (0, 0)
 
         if not self.validIndex(coord_a) or not self.validIndex(coord_b):
             raise ValueError("Coordenadas passadas para "
@@ -195,11 +197,47 @@ class Space2D:
         # atuando sobre a carga, enquanto que reduce faz o somatório dos vetores
         # ao fim retornando o vetor da força resultante
         forca_resultante = reduce(lambda x, y:  (x[0]+y[0], x[1] + y[1]),
-                                  [self.forca_eletrica_entre(coord_ponto,
+                                  (self.forca_eletrica_entre(coord_ponto,
                                                              coord_atual)
-                                   for coord_atual in cargas])
+                                   for coord_atual in cargas))
 
         return forca_resultante
+
+    def campo_entre_dois_pontos(self, coord_ponto: Tuple, coord_carga: Tuple):
+        if coord_ponto == coord_carga:
+            return (0, 0)
+        ax, ay = coord_ponto
+        bx, by = coord_carga
+        carga_b = self.points[bx][by]
+        v = (ax - bx, ay - by)  # vetor entre as os pontos
+
+        dist = Space2D.tamanho_vetor(v)
+        v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
+
+        # fórmula do campo
+        campo = (1/(4*PI*Ponto.EPSILON_0) *
+                 ((carga_b.carga)/(dist**2)))
+
+        # vetor do campo referente a carga no ponto
+        v = (v[0]*campo, v[1]*campo)
+        return v
+
+    def campo_eletrico(self, coord_ponto, cargas: set = None):
+        x, y = coord_ponto
+
+        if cargas == None:
+            # cargas pode ser passado opcionalmente para evitar recalcular
+            cargas = self.get_todas_as_cargas()
+
+        # a list comprehension gera o conjunto das forças elétricas independentes
+        # atuando sobre a carga, enquanto que reduce faz o somatório dos vetores
+        # ao fim retornando o vetor da força resultante
+        campo_resultante = reduce(lambda x, y:  (x[0]+y[0], x[1] + y[1]),
+                                  [self.campo_entre_dois_pontos(coord_ponto,
+                                                                coord_atual)
+                                   for coord_atual in cargas])
+
+        return campo_resultante
 
     def inserir_carga_em_objeto(self, ponto_inicial: Tuple, carga: float):
         """Insere uma carga num objeto. Se for condutor, distribui igualmente
