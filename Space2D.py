@@ -21,8 +21,8 @@ class Space2D:
     def relativeIndex(self, base: int, offset: int):
         """Calcula o índice relativo caso o offset ultrapasse as extremidades do espaço.
 
-        Ex: para um grid de 1001, um índice base igual a 50 e offset de -200, 
-        retornaria -150 % 1001 = 851, isto é, 200 posições antes da posição 50 
+        Ex: para um grid de 1001, um índice base igual a 50 e offset de -200,
+        retornaria -150 % 1001 = 851, isto é, 200 posições antes da posição 50
         teríamos a posição 851 (pois o espaço é conectado em suas extremidades).
 
         Necessário para a simulação do espaço infinito.
@@ -37,10 +37,10 @@ class Space2D:
     def retorna_objeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
         """Retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial.
 
-        Um "objeto" nesse caso é uma região contínua do espaço composta por 
-        pontos do mesmo material. 
+        Um "objeto" nesse caso é uma região contínua do espaço composta por
+        pontos do mesmo material.
 
-        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna 
+        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna
         todos os pontos do circulo.
         """
 
@@ -70,11 +70,11 @@ class Space2D:
         """Retorna todos os pontos que estão na borda de um objeto a partir de um
         ponto qualquer do objeto.
 
-        Um "objeto" nesse caso é uma região contínua do espaço composta por 
+        Um "objeto" nesse caso é uma região contínua do espaço composta por
         pontos do mesmo material. Um ponto na borda de um objeto é um ponto que
-        tem ao menos um vizinho que não é do mesmo material. 
+        tem ao menos um vizinho que não é do mesmo material.
 
-        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna 
+        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna
         apenas os pontos da circunferência do circulo.
         """
 
@@ -121,7 +121,7 @@ class Space2D:
         return (x[0]**2 + x[1] ** 2) ** 0.5
 
     def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
-        """Insere no espaço um círculo de um determinado material com um 
+        """Insere no espaço um círculo de um determinado material com um
         determinado raio, com seu centro em coord_centro."""
         x, y = coord_centro
         for i in range(-raio-1, raio+2):
@@ -132,8 +132,9 @@ class Space2D:
                     if Space2D.distancia_simples(coord_centro, (px, py)) < raio:
                         # se o ponto está dentro do círculo (distância menor que o raio)
                         # substitui ele por um ponto do mesmo material do círculo
-                        self.points[x][y] = Ponto(
-                            epsilon=material.epsilon, cond=material.cond, carga=material.carga)
+                        self.points[x][y].epsilon = material.epsilon
+                        self.points[x][y].cond = material.cond
+                        self.points[x][y].carga = material.carga
 
     def inserir_carga_pontual(self, coord: Tuple, carga: float):
         """Sem mudar o material de um ponto no espaço, insere uma carga ali."""
@@ -178,7 +179,7 @@ class Space2D:
         return v
 
     def calcula_forca_eletrica_pontual(self, coord_ponto: Tuple, cargas: set = None):
-        """Retorna um vetor que representa a força elétrica resultante 
+        """Retorna um vetor que representa a força elétrica resultante
         de todo o espaço naquele ponto.
 
         O parâmetro 'cargas' pode ser passado opcionalmente para evitar recalcular.
@@ -222,7 +223,7 @@ class Space2D:
         v = (v[0]*campo, v[1]*campo)
         return v
 
-    def campo_eletrico(self, coord_ponto, cargas: set = None):
+    def campo_eletrico(self, coord_ponto: Tuple, cargas: set = None):
         x, y = coord_ponto
 
         if cargas == None:
@@ -262,6 +263,42 @@ class Space2D:
             carga_parcial = carga / len(pontos_integrantes)
             for p in pontos_integrantes:
                 self.inserir_carga_pontual(coord=p, carga=carga_parcial)
+
+    def campo_e_potencial_relativo(self, ponto: Tuple, carga: Tuple):
+        if ponto == carga:
+            v = (0, 0)
+            pot = 0
+        else:
+            # vetor entre as os pontos
+            v = (ponto[0] - carga[0], ponto[1] - carga[1])
+
+            dist = Space2D.tamanho_vetor(v)
+            v = (v[0]/dist, v[1]/dist)  # transforma no vetor unitário
+
+            # fórmula do campo
+            campo = (1/(4*PI*Ponto.EPSILON_0) *
+                     ((self.points[carga[0]][carga[1]].carga)/(dist**2)))
+            # fórmula do potencial
+            pot = ((1/(4*PI*Ponto.EPSILON_0) *
+                    self.points[carga[0]][carga[1]].carga)/dist)
+
+            # vetor do campo referente a carga no ponto
+            v = (v[0]*campo, v[1]*campo)
+
+        return (v, pot)
+
+    def calcular_campo_e_potencial(self, cargas: set = None):
+        self.mapa_campo_e_potencial = [
+            [((0, 0), 0) for y in range(self.size)] for x in range(self.size)]
+        if (cargas == None):
+            cargas = self.get_todas_as_cargas()
+        for x in range(self.size):
+            for y in range(self.size):
+                resultado = reduce(lambda x, y:  ((x[0][0]+y[0][0], x[0][1] + y[0][1]), x[1]+y[1]),
+                                   (self.campo_e_potencial_relativo((x, y),
+                                                                    c)
+                                    for c in cargas))
+                self.mapa_campo_e_potencial[x][y] = resultado
 
 
 def main(argv):
