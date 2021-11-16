@@ -120,7 +120,7 @@ class Space2D:
         """Tamanho de um vetor"""
         return (x[0]**2 + x[1] ** 2) ** 0.5
 
-    def desenhaCirculo(self, material: Ponto, coord_centro: Tuple, raio: int):
+    def desenha_circulo(self, material: Ponto, coord_centro: Tuple, raio: int):
         """Insere no espaço um círculo de um determinado material com um
         determinado raio, com seu centro em coord_centro."""
         x, y = coord_centro
@@ -134,7 +134,29 @@ class Space2D:
                         # substitui ele por um ponto do mesmo material do círculo
                         self.points[x][y].epsilon = material.epsilon
                         self.points[x][y].cond = material.cond
-                        self.points[x][y].carga = material.carga
+
+    def desenha_semiplano(self, material: Ponto, pos_borda: int, vertical: bool = True, superior_ou_esquerdo: bool = True):
+        if (material == None or not self.validIndex((pos_borda, pos_borda))):
+            raise ValueError(
+                "Valores inválidos passados para desenha_semiplano.")
+        if (superior_ou_esquerdo):
+            for x in range(pos_borda+1):
+                for y in range(self.size):
+                    if (vertical):
+                        self.points[x][y].cond = material.cond
+                        self.points[x][y].epsilon = material.epsilon
+                    else:
+                        self.points[y][x].cond = material.cond
+                        self.points[y][x].epsilon = material.epsilon
+        else:
+            for x in range(pos_borda, self.size):
+                for y in range(self.size):
+                    if (vertical):
+                        self.points[x][y].cond = material.cond
+                        self.points[x][y].epsilon = material.epsilon
+                    else:
+                        self.points[y][x].cond = material.cond
+                        self.points[y][x].epsilon = material.epsilon
 
     def inserir_carga_pontual(self, coord: Tuple, carga: float):
         """Sem mudar o material de um ponto no espaço, insere uma carga ali."""
