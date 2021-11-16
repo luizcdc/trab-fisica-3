@@ -35,17 +35,17 @@ class Ponto:
         elif tipo == "C":
             # se nao foi especificado uma condutividade diferente do padrao, usa o valor predefinido para condutores
             if cond == Ponto.COND_VACUO:
-                cond = Ponto.COND_PRATA
+                self.cond = Ponto.COND_PRATA
             # se nao foi especificado uma permissividade diferente do padrao, usa o valor predefinido para condutores
             if epsilon == Ponto.EPSILON_0:
-                epsilon = Ponto.EPSILON_PRATA
+                self.epsilon = Ponto.EPSILON_PRATA
         elif tipo == "I":
             # se nao foi especificado uma condutividade diferente do padrao, usa o valor predefinido para isolantes
             if cond == Ponto.COND_VACUO:
-                cond = Ponto.COND_AGUA
+                self.cond = Ponto.COND_AGUA
             # se nao foi especificado uma permissividade diferente do padrao, usa o valor predefinido para isolantes
             if epsilon == Ponto.EPSILON_0:
-                epsilon = Ponto.EPSILON_AGUA
+                self.epsilon = Ponto.EPSILON_AGUA
 
         self.carga = carga
 
