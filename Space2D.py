@@ -162,6 +162,11 @@ class Space2D:
         """Sem mudar o material de um ponto no espaço, insere uma carga ali."""
         self.points[coord[0]][coord[1]].carga = carga
 
+    def somar_carga_pontual(self, coord: Tuple, carga: float):
+        """Sem mudar o material de um ponto no espaço, soma uma carga 
+        com a carga existente ali."""
+        self.points[coord[0]][coord[1]].carga += carga
+
     def get_todas_as_cargas(self):
         """Retorna as coordenadas de todos os pontos do espaço que têm qualquer carga."""
         cargas = set()
@@ -267,24 +272,38 @@ class Space2D:
         por pelos pontos da borda do objeto, se for isolante, distribui igualmente
         por todos os pontos do objeto. Se for vácuo, insere apenas no ponto inicial."""
         x, y = ponto_inicial
-        if self.points[x][y].epsilon == float("inf"):
-            # é metal
-            borda = self.retorna_pontos_superficiais(
-                coord_inicial=ponto_inicial)
-            carga_parcial = carga / len(borda)
-            for p in borda:
-                x, y = p
-                self.inserir_carga_pontual(coord=p, carga=carga_parcial)
-        elif self.points[x][y].epsilon == Ponto.EPSILON_0:
-            # é o vácuo
-            self.inserir_carga_pontual(coord=ponto_inicial, carga=carga)
-        else:
-            # é isolante
-            pontos_integrantes = self.retorna_objeto(
-                coord_inicial=ponto_inicial)
-            carga_parcial = carga / len(pontos_integrantes)
-            for p in pontos_integrantes:
-                self.inserir_carga_pontual(coord=p, carga=carga_parcial)
+        if self.validIndex(ponto_inicial):
+            if self.points[x][y].epsilon == float("inf"):
+                # é metal
+                borda = self.retorna_pontos_superficiais(
+                    coord_inicial=ponto_inicial)
+                carga_parcial = carga / len(borda)
+                for p in borda:
+                    x, y = p
+                    self.somar_carga_pontual(coord=p, carga=carga_parcial)
+            elif self.points[x][y].isVacuo():
+                # é o vácuo
+                self.somar_carga_pontual(coord=ponto_inicial, carga=carga)
+            else:
+                # é isolante
+                pontos_integrantes = self.retorna_objeto(
+                    coord_inicial=ponto_inicial)
+                carga_parcial = carga / len(pontos_integrantes)
+                for p in pontos_integrantes:
+                    self.somar_carga_pontual(coord=p, carga=carga_parcial)
+
+    def resetar_carga_em_objeto(self, ponto_inicial: Tuple):
+        x, y = ponto_inicial
+        if self.validIndex(ponto_inicial):
+            if self.points[x][y].isVacuo():
+                # é o vácuo
+                self.inserir_carga_pontual(coord=ponto_inicial, carga=0)
+            else:
+                # é material
+                pontos_integrantes = self.retorna_objeto(
+                    coord_inicial=ponto_inicial)
+                for p in pontos_integrantes:
+                    self.inserir_carga_pontual(coord=p, carga=0)
 
     def campo_e_potencial_relativo(self, ponto: Tuple, carga: Tuple):
         if ponto == carga:
