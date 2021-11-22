@@ -59,6 +59,12 @@ class Ponto:
 
         return self.epsilon == Ponto.EPSILON_0 and self.cond == Ponto.COND_VACUO
 
+    def isCondutor(self):
+        return self.epsilon == float('inf')
+
+    def isIsolante(self):
+        return self.cond < 0
+
     def mesmoMaterial(self, outro):
         """Retorna se um ponto é feito do mesmo material que o outro. É preferível
         implementar isso do que o builtin __eq__, pois Ponto não guarda informa-
@@ -67,5 +73,20 @@ class Ponto:
         """
         return isinstance(outro, Ponto) and self.cond == outro.cond and self.epsilon == outro.epsilon
 
+    def nome_material(self):
+        if self.isVacuo():
+            return "vácuo"
+        elif self.isIsolante():
+            return 'isolante'
+        elif self.isCondutor():
+            return 'condutor'
+        else:
+            return 'desconhecido'
+
     def __str__(self):
-        return f'Epsilon: {self.epsilon}\nPermissividade relativa:{self.epsilon/Ponto.EPSILON_0}\nCondutividade:{self.cond}\nCarga:{self.carga}'
+        r = f'Tipo de material: {self.nome_material()}'
+        r += f'\nEpsilon: {self.epsilon}'
+        r += f'\nPermissividade relativa:{self.epsilon/Ponto.EPSILON_0}'
+        r += f'\nCondutividade:{self.cond}'
+        r += f'\nCarga:{self.carga}'
+        return
