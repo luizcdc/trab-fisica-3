@@ -35,39 +35,7 @@ class Space2D:
         trapassam as dimensões do grid."""
         return coord[0] >= 0 and coord[0] < self.size and coord[1] >= 0 and coord[1] < self.size
 
-    def retorna_objeto(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = set()):
-        """Retorna todos os pontos que fazem parte do mesmo objeto que o ponto inicial.
-
-        Um "objeto" nesse caso é uma região contínua do espaço composta por
-        pontos do mesmo material.
-
-        Ex: a partir de qualquer ponto de um circulo feito de prata, retorna
-        todos os pontos do circulo.
-        """
-
-        x, y = coord_inicial
-        pontoInicial = self.points[x][y]
-
-        # A função é recursiva. Esse if só é executado na chamada inicial.
-        if len(pontos_integrantes) == 0:
-            pontos_integrantes.add((coord_inicial))
-
-        # para cada um dos vizinhos
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                xv = x+i
-                yv = x+j
-                if self.validIndex((xv, yv)):
-                    vizinho = self.points[xv][yv]
-                    if (xv, yv) not in pontos_integrantes and pontoInicial.mesmoMaterial(vizinho):
-                        # se chegou até aqui, o vizinho é do mesmo material e ainda não foi processado
-                        # adicionamos ele ao conjunto de pontos integrantes e verificamos os vizinhos dele
-                        pontos_integrantes.add((xv, yv))
-                        pontos_integrantes = pontos_integrantes.union(self.retorna_objeto(
-                            (xv, yv), pontos_integrantes))
-        return pontos_integrantes
-
-    def retorna_pontos_superficiais(self, coord_inicial: Tuple, pontos_integrantes: set[Tuple] = None):
+    def retorna_pontos_superficiais(self, pontos_integrantes: set[Tuple]):
         """Retorna todos os pontos que estão na borda de um objeto a partir de um
         ponto qualquer do objeto.
 
@@ -78,10 +46,6 @@ class Space2D:
         Ex: a partir de qualquer ponto de um circulo feito de prata, retorna
         apenas os pontos da circunferência do circulo.
         """
-
-        # pontos integrantes pode ser passado pronto para evitar recalcular
-        if pontos_integrantes == None:
-            pontos_integrantes = self.retorna_objeto(coord_inicial)
 
         pontos_de_superficie = set()
 
@@ -125,6 +89,7 @@ class Space2D:
         """Insere no espaço um círculo de um determinado material com um
         determinado raio, com seu centro em coord_centro."""
         x, y = coord_centro
+        pontos_integrantes = set()
         for i in range(-raio-1, raio+2):
             for j in range(-raio-1, raio+2):
                 # varredura de um quadrado de tamanho raio+1 * 2
@@ -135,29 +100,37 @@ class Space2D:
                         # substitui ele por um ponto do mesmo material do círculo
                         self.points[px][py].epsilon = material.epsilon
                         self.points[px][py].cond = material.cond
+                        pontos_integrantes.add((px, py))
+        return pontos_integrantes
 
     def desenha_semiplano(self, material: Ponto, pos_borda: int, vertical: bool = True, superior_ou_esquerdo: bool = True):
         if (material == None or not self.validIndex((pos_borda, pos_borda))):
             raise ValueError(
                 "Valores inválidos passados para desenha_semiplano.")
+        pontos_integrantes = set()
         if (superior_ou_esquerdo):
             for x in range(pos_borda+1):
                 for y in range(self.size):
                     if (vertical):
                         self.points[x][y].cond = material.cond
                         self.points[x][y].epsilon = material.epsilon
+                        pontos_integrantes.add((x, y))
                     else:
                         self.points[y][x].cond = material.cond
                         self.points[y][x].epsilon = material.epsilon
+                        pontos_integrantes.add((y, x))
         else:
             for x in range(pos_borda, self.size):
                 for y in range(self.size):
                     if (vertical):
                         self.points[x][y].cond = material.cond
                         self.points[x][y].epsilon = material.epsilon
+                        pontos_integrantes.add((x, y))
                     else:
                         self.points[y][x].cond = material.cond
                         self.points[y][x].epsilon = material.epsilon
+                        pontos_integrantes.add((y, x))
+        return pontos_integrantes
 
     def inserir_carga_pontual(self, coord: Tuple, carga: float):
         """Sem mudar o material de um ponto no espaço, insere uma carga ali."""
@@ -251,7 +224,7 @@ class Space2D:
         v = (v[0]*campo, v[1]*campo)
         return v
 
-    def campo_eletrico(self, coord_ponto: Tuple, cargas: set = None):
+    def campo_eletrico_pontual(self, coord_ponto: Tuple, cargas: set = None):
         x, y = coord_ponto
 
         if cargas == None:
@@ -268,43 +241,33 @@ class Space2D:
 
         return campo_resultante
 
-    def inserir_carga_em_objeto(self, ponto_inicial: Tuple, carga: float):
+    def inserir_carga_em_objeto(self, pontos_integrantes: set[tuple[int, int]], carga: float):
         """Insere uma carga num objeto. Se for condutor, distribui igualmente
         por pelos pontos da borda do objeto, se for isolante, distribui igualmente
         por todos os pontos do objeto. Se for vácuo, insere apenas no ponto inicial."""
-        x, y = ponto_inicial
-        if self.validIndex(ponto_inicial):
+        x, y = pontos_integrantes.__iter__().__next__()
+        if len(pontos_integrantes) != 0:
             if self.points[x][y].epsilon == float("inf"):
                 # é metal
                 borda = self.retorna_pontos_superficiais(
-                    coord_inicial=ponto_inicial)
+                    pontos_integrantes=pontos_integrantes)
                 carga_parcial = carga / len(borda)
                 for p in borda:
                     x, y = p
                     self.somar_carga_pontual(coord=p, carga=carga_parcial)
             elif self.points[x][y].isVacuo():
                 # é o vácuo
-                self.somar_carga_pontual(coord=ponto_inicial, carga=carga)
+                self.somar_carga_pontual(coord=(x, y), carga=carga)
             else:
                 # é isolante
-                pontos_integrantes = self.retorna_objeto(
-                    coord_inicial=ponto_inicial)
                 carga_parcial = carga / len(pontos_integrantes)
                 for p in pontos_integrantes:
                     self.somar_carga_pontual(coord=p, carga=carga_parcial)
 
-    def resetar_carga_em_objeto(self, ponto_inicial: Tuple):
-        x, y = ponto_inicial
-        if self.validIndex(ponto_inicial):
-            if self.points[x][y].isVacuo():
-                # é o vácuo
-                self.inserir_carga_pontual(coord=ponto_inicial, carga=0)
-            else:
-                # é material
-                pontos_integrantes = self.retorna_objeto(
-                    coord_inicial=ponto_inicial)
-                for p in pontos_integrantes:
-                    self.inserir_carga_pontual(coord=p, carga=0)
+    def resetar_carga_em_objeto(self, pontos_integrantes: set[Tuple[int, int]]):
+        if len(pontos_integrantes) != 0:
+            for p in pontos_integrantes:
+                self.inserir_carga_pontual(coord=p, carga=0)
 
     def campo_e_potencial_relativo(self, ponto: Tuple, carga: Tuple):
         if ponto == carga:
@@ -341,6 +304,12 @@ class Space2D:
                                                                     c)
                                     for c in cargas))
                 self.mapa_campo_e_potencial[x][y] = resultado
+
+    def calcula_potencial_eletrico_pontual(self, coord_ponto: tuple[int, int], cargas: set):
+        x, y = coord_ponto
+        return sum((self.campo_e_potencial_relativo((x, y),
+                                                    c)[1]
+                    for c in cargas))
 
 
 def main(argv):
