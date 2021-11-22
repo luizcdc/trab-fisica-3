@@ -158,7 +158,7 @@ if __name__ == '__main__':
             except ValueError:
                 print("Valores inválidos. Voltando ao menu.")
                 continue
-            print('Informações do ponto escolhido:')
+            print(f'Informações do ponto ({posx},{posy}):')
             print(espaco.points[posx][posy])
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
             # TODO: inserir essas funções de gerar visualização aqui

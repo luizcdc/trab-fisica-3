@@ -66,3 +66,6 @@ class Ponto:
         idênticas podem ser pontos distintos.
         """
         return isinstance(outro, Ponto) and self.cond == outro.cond and self.epsilon == outro.epsilon
+
+    def __str__(self):
+        return f'Epsilon: {self.epsilon}\nPermissividade relativa:{self.epsilon/Ponto.EPSILON_0}\nCondutividade:{self.cond}\nCarga:{self.carga}'
