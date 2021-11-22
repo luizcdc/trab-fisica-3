@@ -3,8 +3,8 @@ from Ponto import Ponto
 
 
 if __name__ == '__main__':
-    tam = 1
-    while tam % 2:
+    tam = 2
+    while not tam % 2:
         try:
             tam = int(input('Tamanho do espaço 2D quadrado (inteiro ímpar): '))
         except ValueError:
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     while entrada != '0':
         entrada = input(f"""
     Tamanho do espaço: {tam}
-    Obs: um espaço de tamanho {tam} tem coordenadas de -{tam//2} a {tam//2}.
+    Obs: um espaço de tamanho {tam}x{tam} tem coordenadas de -{tam//2} a {tam//2}.
 
     Menu:
         1 - Desenhar um objeto.
@@ -60,7 +60,8 @@ if __name__ == '__main__':
                                    ) + (espaco.size//2)
                         posy = int(input('Coordenada y do círculo: ')
                                    ) + (espaco.size//2)
-                        raio_circulo = int(input('Raio do círculo em metros'))
+                        raio_circulo = int(
+                            input('Raio do círculo em metros: '))
                         if not espaco.validIndex(coord=(posx, posy)):
                             raise ValueError
                         break
@@ -90,18 +91,19 @@ if __name__ == '__main__':
                             raise ValueError
                         else:
                             orientacao = True if orientacao == 'V' else False
-                        if orientacao == 'V':
-                            lado = input('|E|squerda ou |D|ireita?')
+                        if orientacao == True:
+                            lado = input('|E|squerda ou |D|ireita? ')
                             if lado not in ('E', 'D'):
                                 raise ValueError
                             else:
                                 lado = True if lado == 'E' else False
-                        elif orientacao == 'H':
-                            lado = input('|S|uperior ou |I|nferior?')
+                        else:
+                            lado = input('|S|uperior ou |I|nferior? ')
                             if lado not in ('S', 'I'):
                                 raise ValueError
                             else:
                                 lado = True if lado == 'S' else False
+
                         pos = int(input('Coordenada do limite do semiplano: ')
                                   ) + (espaco.size//2)
                         if not espaco.validIndex(coord=(0, pos)):
@@ -129,7 +131,7 @@ if __name__ == '__main__':
                 if not espaco.validIndex(coord=(posx, posy)):
                     raise ValueError
             except ValueError:
-                print("Valores inválidos. Voltando ao menu.")
+                print('Valores inválidos. Voltando ao menu.')
                 continue
             espaco.inserir_carga_em_objeto(
                 ponto_inicial=(posx, posy), carga=carga)
@@ -144,7 +146,7 @@ if __name__ == '__main__':
                 if not espaco.validIndex(coord=(posx, posy)):
                     raise ValueError
             except ValueError:
-                print("Valores inválidos. Voltando ao menu.")
+                print('Valores inválidos. Voltando ao menu.')
                 continue
             espaco.inserir_carga_pontual(coord=(posx, posy), carga=carga)
         elif entrada == '4':  # OPÇÃO CONSULTAR INFORMAÇÕES DE UM PONTO
@@ -156,9 +158,10 @@ if __name__ == '__main__':
                 if not espaco.validIndex(coord=(posx, posy)):
                     raise ValueError
             except ValueError:
-                print("Valores inválidos. Voltando ao menu.")
+                print('Valores inválidos. Voltando ao menu.')
                 continue
-            print(f'Informações do ponto ({posx},{posy}):')
+            print(
+                f'Informações do ponto ({posx-(espaco.size//2)},{posy-(espaco.size//2)}):')
             print(espaco.points[posx][posy])
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
             # TODO: inserir essas funções de gerar visualização aqui

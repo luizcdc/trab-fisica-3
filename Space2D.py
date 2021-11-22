@@ -1,4 +1,3 @@
-from _typeshed import ReadableBuffer
 from typing import Tuple
 from Ponto import Ponto
 from sys import argv
@@ -129,11 +128,13 @@ class Space2D:
                 # varredura de um quadrado de tamanho raio+1 * 2
                 px, py = x+i, y+j
                 if self.validIndex((px, py)):
-                    if Space2D.distancia_simples(coord_centro, (px, py)) < raio:
+                    print(f"Varrendo ({px},{py})")  # TODO: remove this
+                    if Space2D.distancia_simples(coord_centro, (px, py)) <= raio:
+                        print()
                         # se o ponto está dentro do círculo (distância menor que o raio)
                         # substitui ele por um ponto do mesmo material do círculo
-                        self.points[x][y].epsilon = material.epsilon
-                        self.points[x][y].cond = material.cond
+                        self.points[px][py].epsilon = material.epsilon
+                        self.points[px][py].cond = material.cond
 
     def desenha_semiplano(self, material: Ponto, pos_borda: int, vertical: bool = True, superior_ou_esquerdo: bool = True):
         if (material == None or not self.validIndex((pos_borda, pos_borda))):
