@@ -3,6 +3,8 @@ from Ponto import Ponto
 from sys import argv
 from functools import reduce
 from math import pi as PI
+import sys
+sys.setrecursionlimit(10000)
 
 
 class Space2D:
@@ -128,9 +130,7 @@ class Space2D:
                 # varredura de um quadrado de tamanho raio+1 * 2
                 px, py = x+i, y+j
                 if self.validIndex((px, py)):
-                    print(f"Varrendo ({px},{py})")  # TODO: remove this
                     if Space2D.distancia_simples(coord_centro, (px, py)) <= raio:
-                        print()
                         # se o ponto está dentro do círculo (distância menor que o raio)
                         # substitui ele por um ponto do mesmo material do círculo
                         self.points[px][py].epsilon = material.epsilon
@@ -264,7 +264,7 @@ class Space2D:
         campo_resultante = reduce(lambda x, y:  (x[0]+y[0], x[1] + y[1]),
                                   [self.campo_entre_dois_pontos(coord_ponto,
                                                                 coord_atual)
-                                   for coord_atual in cargas])
+                                   for coord_atual in cargas], (0, 0))
 
         return campo_resultante
 

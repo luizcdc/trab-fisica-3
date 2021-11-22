@@ -160,9 +160,18 @@ if __name__ == '__main__':
             except ValueError:
                 print('Valores inválidos. Voltando ao menu.')
                 continue
+            print()
             print(
                 f'Informações do ponto ({posx-(espaco.size//2)},{posy-(espaco.size//2)}):')
             print(espaco.points[posx][posy])
+            cargas = espaco.get_todas_as_cargas()
+            print(
+                f'Força elétrica: {espaco.calcula_forca_eletrica_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+            print(
+                f'Campo elétrico: {espaco.campo_eletrico(coord_ponto=(posx,posy),cargas=cargas)}')
+            # print(f'Potencial elétrico: {espaco.calcula_potencial_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+            print()
+            input("Enter para voltar ao menu principal")
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
             # TODO: inserir essas funções de gerar visualização aqui
             pass

@@ -63,7 +63,7 @@ class Ponto:
         return self.epsilon == float('inf')
 
     def isIsolante(self):
-        return self.cond < 0
+        return self.cond < 1
 
     def mesmoMaterial(self, outro):
         """Retorna se um ponto é feito do mesmo material que o outro. É preferível
@@ -75,7 +75,7 @@ class Ponto:
 
     def nome_material(self):
         if self.isVacuo():
-            return "vácuo"
+            return 'vácuo'
         elif self.isIsolante():
             return 'isolante'
         elif self.isCondutor():
@@ -89,4 +89,4 @@ class Ponto:
         r += f'\nPermissividade relativa:{self.epsilon/Ponto.EPSILON_0}'
         r += f'\nCondutividade:{self.cond}'
         r += f'\nCarga:{self.carga}'
-        return
+        return r
