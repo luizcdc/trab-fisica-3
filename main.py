@@ -12,7 +12,7 @@ if __name__ == '__main__':
             continue
 
     espaco = Space2D(size=tam)
-
+    objetos = []
     entrada = ''
     while entrada != '0':
         entrada = input(f"""
@@ -68,8 +68,8 @@ if __name__ == '__main__':
                     except ValueError:
                         print('Valores inválidos. Digite novamente.')
 
-                espaco.desenha_circulo(material=Ponto(mat), coord_centro=(
-                    posx, posy), raio=raio_circulo)
+                objetos.append(espaco.desenha_circulo(material=Ponto(mat), coord_centro=(
+                    posx, posy), raio=raio_circulo))
                 # chamar inserir_carga_em_objeto() em um ponto do círculo
             elif obj == '2':  # desenhar semiplano
                 mat = ''
@@ -113,8 +113,9 @@ if __name__ == '__main__':
                         print('Valores inválidos. Digite novamente.')
                 if not isinstance(lado, bool):
                     lado = True
-                espaco.desenha_semiplano(material=Ponto(
-                    mat), pos_borda=pos, vertical=orientacao, superior_ou_esquerdo=lado)
+                objetos.append(espaco.desenha_semiplano(material=Ponto(
+                    mat), pos_borda=pos, vertical=orientacao, superior_ou_esquerdo=lado))
+
                 # chamar inserir_carga_em_objeto() em um ponto do círculo
 
                 # perguntar os limites do semiplano
@@ -133,8 +134,12 @@ if __name__ == '__main__':
             except ValueError:
                 print('Valores inválidos. Voltando ao menu.')
                 continue
-            espaco.inserir_carga_em_objeto(
-                ponto_inicial=(posx, posy), carga=carga)
+            for o in objetos:
+                if (posx, posy) in o:
+                    espaco.inserir_carga_em_objeto(
+                        pontos_integrantes=o, carga=carga)
+                    break
+
         elif entrada == '3':  # OPÇÃO INSERIR CARGA PONTUAL
             try:
                 carga = float(
@@ -168,8 +173,9 @@ if __name__ == '__main__':
             print(
                 f'Força elétrica: {espaco.calcula_forca_eletrica_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
             print(
-                f'Campo elétrico: {espaco.campo_eletrico(coord_ponto=(posx,posy),cargas=cargas)}')
-            # print(f'Potencial elétrico: {espaco.calcula_potencial_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+                f'Campo elétrico: {espaco.campo_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+            print(
+                f'Potencial elétrico: {espaco.calcula_potencial_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
             print()
             input("Enter para voltar ao menu principal")
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
