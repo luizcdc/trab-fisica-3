@@ -53,7 +53,7 @@ class Space2D:
             ehSuperficie = False  # flag para ir para o próximo ponto
             x, y = coord_ponto
             ponto = self.points[x][y]
-
+            ehSuperficie = False
             # para cada vizinho
             for i in range(-1, 2):
                 for j in range(-1, 2):
@@ -64,13 +64,14 @@ class Space2D:
                         if not ponto.mesmoMaterial(vizinho):
                             # se esse ponto tem um vizinho de material diferente,
                             # é um ponto da borda do objeto.
-                            pontos_de_superficie.add((xv, yv))
+                            pontos_de_superficie.add((x, y))
                             ehSuperficie = True
                             break
                 if (ehSuperficie):
                     # encerra o for do i, isto é, não precisa verificar nenhum
                     # outro vizinho, e vai processar o próximo ponto do objeto
                     break
+        print(pontos_de_superficie)
         return pontos_de_superficie
 
     @staticmethod
