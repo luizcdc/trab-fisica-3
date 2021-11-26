@@ -71,7 +71,6 @@ class Space2D:
                     # encerra o for do i, isto é, não precisa verificar nenhum
                     # outro vizinho, e vai processar o próximo ponto do objeto
                     break
-        print(pontos_de_superficie)
         return pontos_de_superficie
 
     @staticmethod

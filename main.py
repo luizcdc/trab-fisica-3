@@ -28,6 +28,7 @@ if __name__ == '__main__':
         0 - Sair.
 
         Opção: """)
+
         if entrada == '0':  # OPÇÃO SAIR
             print('Encerrando simulador.')
             break
