@@ -85,8 +85,8 @@ class Ponto:
 
     def __str__(self):
         r = f'Tipo de material: {self.nome_material()}'
-        r += f'\nEpsilon: {self.epsilon}'
-        r += f'\nPermissividade relativa:{self.epsilon/Ponto.EPSILON_0}'
-        r += f'\nCondutividade:{self.cond}'
-        r += f'\nCarga:{self.carga}'
+        r += f'\nEpsilon: {self.epsilon} F/m'
+        r += f'\nPermissividade relativa: {self.epsilon/Ponto.EPSILON_0}'
+        r += f'\nCondutividade: {self.cond} S/m'
+        r += f'\nCarga: {self.carga} C'
         return r
