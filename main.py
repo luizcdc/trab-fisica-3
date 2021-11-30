@@ -172,11 +172,11 @@ if __name__ == '__main__':
             print(espaco.points[posx][posy])
             cargas = espaco.get_todas_as_cargas()
             print(
-                f'Força elétrica: {espaco.calcula_forca_eletrica_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+                f'Força elétrica: {espaco.calcula_forca_eletrica_pontual(coord_ponto=(posx,posy),cargas=cargas)} N')
             print(
-                f'Campo elétrico: {espaco.campo_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+                f'Campo elétrico: {espaco.campo_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)} N/C')
             print(
-                f'Potencial elétrico: {espaco.calcula_potencial_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)}')
+                f'Potencial elétrico: {espaco.calcula_potencial_eletrico_pontual(coord_ponto=(posx,posy),cargas=cargas)} V')
             print()
             input("Enter para voltar ao menu principal")
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
