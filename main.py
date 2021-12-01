@@ -1,5 +1,8 @@
+from numpy.lib.function_base import meshgrid
 from Space2D import Space2D
 from Ponto import Ponto
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
@@ -14,6 +17,9 @@ if __name__ == '__main__':
     espaco = Space2D(size=tam)
     objetos = []
     entrada = ''
+
+
+
     while entrada != '0':
         entrada = input(f"""
     Tamanho do espaço: {tam}
@@ -181,4 +187,33 @@ if __name__ == '__main__':
             input("Enter para voltar ao menu principal")
         elif entrada == '5':  # OPÇÃO GERAR VISUALIZAÇÕES
             # TODO: inserir essas funções de gerar visualização aqui
+            #grid do espaço 2d, de tam//2*-1 a tam//2
+            """
+            x = np.arange(tam//2*-1,tam//2,tam//10)
+            y = np.arange(tam//2*-1,tam//2,tam//10)
+
+            X, Y = np.meshgrid(x, y)
+
+            u = []
+            v = []
+            for i in range(10):
+                auxu = []
+                auxv = []
+                for j in range(10):
+                    uu, vv = (espaco.campo_eletrico_pontual(coord_ponto= (X[i][j], Y[i][j])))
+                    auxu.append(uu)
+                    auxv.append(vv)
+                u.append(auxu)
+                v.append(auxv)
+            #direção do vetor no ponto, usar campo_eletrico_pontual
+            #u = Space2D.campo_eletrico_pontual(X, Y)
+
+            print(u)
+            print(v)
+            fig, ax = plt.subplots(figsize=(7,7))
+            ax.quiver(X,Y,u,v)
+
+            ax.set_aspect('equal')
+            plt.show()
+            """
             pass
